@@ -19,21 +19,38 @@ public class Raktar implements Serializable {
     }
 
     public boolean vanElegEledel(EledelTipus tipus, int mennyiseg) {
-        // TODO: implementacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+        if (tipus == null || mennyiseg <= 0) {
+            return false;
+        }
+        return getKeszlet(tipus) >= mennyiseg;
     }
 
     public void csokkentKeszlet(EledelTipus tipus, int mennyiseg) {
-        // TODO: implementacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+        if (tipus == null) {
+            throw new IllegalArgumentException("A tipus nem lehet null");
+        }
+        if (mennyiseg < 0) {
+            throw new IllegalArgumentException("A mennyiseg nem lehet negativ");
+        }
+        int aktualis = getKeszlet(tipus);
+        if (aktualis < mennyiseg) {
+            throw new IllegalStateException(
+                    "Nincs eleg eledel (" + tipus + "): " + aktualis + " < " + mennyiseg);
+        }
+        keszlet.put(tipus, aktualis - mennyiseg);
     }
 
     public void feltoltKeszlet(EledelTipus tipus, int mennyiseg) {
-        // TODO: implementacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+        if (tipus == null) {
+            throw new IllegalArgumentException("A tipus nem lehet null");
+        }
+        if (mennyiseg < 0) {
+            throw new IllegalArgumentException("A mennyiseg nem lehet negativ");
+        }
+        keszlet.put(tipus, getKeszlet(tipus) + mennyiseg);
     }
 
     public int getKeszlet(EledelTipus tipus) {
-        return keszlet.getOrDefault(tipus, 0);
+        return keszlet.get(tipus);
     }
 }
