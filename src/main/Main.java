@@ -1,4 +1,8 @@
+import enums.EledelTipus;
 import gui.AllatGUI;
+import model.Emlos;
+import model.Hullo;
+import model.Madar;
 import model.MenhelyModell;
 
 import javax.swing.SwingUtilities;

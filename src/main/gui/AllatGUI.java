@@ -1,5 +1,6 @@
 package gui;
 
+import enums.Allapot;
 import enums.EledelTipus;
 import model.Allat;
 import model.Emlos;
@@ -81,6 +82,10 @@ public class AllatGUI extends JFrame {
         JButton ujGomb = new JButton("Új állat");
         ujGomb.addActionListener(e -> ujAllatDialogus());
         eszkoztar.add(ujGomb);
+
+        JButton etetesGomb = new JButton("Etetés");
+        etetesGomb.addActionListener(e -> kivalasztottEtetese());
+        eszkoztar.add(etetesGomb);
 
         JButton torolGomb = new JButton("Törlés");
         torolGomb.addActionListener(e -> kivalasztottTorlese());
@@ -172,6 +177,36 @@ public class AllatGUI extends JFrame {
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this,
                     ex.getMessage(), "Hibás adat", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void kivalasztottEtetese() {
+        int nezetiSor = allatTabla.getSelectedRow();
+        if (nezetiSor < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Előbb válassz ki egy állatot a táblázatból.",
+                    "Nincs kijelölés", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        int modellSor = allatTabla.convertRowIndexToModel(nezetiSor);
+        Allat allat = modell.getAllatok().get(modellSor);
+
+        if (allat.getAllapot() == Allapot.MEGHALT) {
+            JOptionPane.showMessageDialog(this,
+                    allat.getNev() + " már nem etethető (MEGHALT).",
+                    "Sikertelen etetés", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        boolean sikeres = allat.etetes(modell.getRaktar());
+        if (sikeres) {
+            tablaModell.fireTableDataChanged();
+            frissitRaktarKijelzo();
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Nincs elég eledel a raktárban " + allat.getNev() + " etetéséhez.",
+                    "Sikertelen etetés", JOptionPane.WARNING_MESSAGE);
         }
     }
 
