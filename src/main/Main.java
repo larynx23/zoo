@@ -3,9 +3,6 @@ import model.MenhelyModell;
 
 import javax.swing.SwingUtilities;
 
-/**
- * Alkalmazas belepesi pontja.
- */
 public class Main {
 
     public static void main(String[] args) {

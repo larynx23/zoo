@@ -18,6 +18,11 @@ public class Madar extends Allat {
         return EledelTipus.MAG;
     }
 
+    @Override
+    protected int getAdagMeret() {
+        return Math.max(1, (int) Math.ceil(szarnyfesztav / 0.5));
+    }
+
     public double getSzarnyfesztav() {
         return szarnyfesztav;
     }

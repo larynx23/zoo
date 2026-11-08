@@ -18,6 +18,16 @@ public class Emlos extends Allat {
         return EledelTipus.HUS;
     }
 
+    @Override
+    protected int getAdagMeret() {
+        return Math.max(1, (int) Math.ceil(getSuly() / 10.0));
+    }
+    
+    @Override
+    protected void etetesHatasa() {
+        setSuly(getSuly() + 0.5);
+    }
+
     public String getSzorTipus() {
         return szorTipus;
     }

@@ -18,6 +18,11 @@ public class Hullo extends Allat {
         return EledelTipus.ROVAR;
     }
 
+    @Override
+    protected int getAdagMeret() {
+        return mergezo ? 1 : 2;
+    }
+
     public boolean isMergezo() {
         return mergezo;
     }
