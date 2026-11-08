@@ -1,10 +1,16 @@
 package model;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class MenhelyModell implements Serializable {
 
@@ -14,33 +20,49 @@ public class MenhelyModell implements Serializable {
     private Raktar raktar = new Raktar();
 
     public void hozzaad(Allat allat) {
-        // TODO: implementacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+        if (allat == null) {
+            throw new IllegalArgumentException("Az allat nem lehet null");
+        }
+        allatok.add(allat);
     }
 
-    public void torol(Allat allat) {
-        // TODO: implementacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+    public boolean torol(Allat allat) {
+        return allatok.remove(allat);
     }
 
     public List<Allat> szur(Predicate<Allat> feltetel) {
-        // TODO: implementacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+        if (feltetel == null) {
+            return new ArrayList<>(allatok);
+        }
+        return allatok.stream()
+                .filter(feltetel)
+                .collect(Collectors.toList());
     }
 
     public void frissitAllapotok() {
-        // TODO: implementacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+        for (Allat allat : allatok) {
+            allat.frissitAllapot();
+        }
     }
 
     public void mentes(String fajlNev) throws IOException {
-        // TODO: ObjectOutputStream alapu szerializacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+        Objects.requireNonNull(fajlNev, "A fajlnev nem lehet null");
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fajlNev))) {
+            oos.writeObject(new MentettAllapot(new ArrayList<>(allatok), raktar));
+        }
     }
 
     public void betoltes(String fajlNev) throws IOException, ClassNotFoundException {
-        // TODO: ObjectInputStream alapu deszerializacio
-        throw new UnsupportedOperationException("Nincs implementalva");
+        Objects.requireNonNull(fajlNev, "A fajlnev nem lehet null");
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fajlNev))) {
+            MentettAllapot allapot = (MentettAllapot) ois.readObject();
+            allatok.clear();
+            allatok.addAll(allapot.allatok());
+            setRaktar(allapot.raktar());
+        }
+    }
+
+    private record MentettAllapot(List<Allat> allatok, Raktar raktar) implements Serializable {
     }
 
     public List<Allat> getAllatok() {
