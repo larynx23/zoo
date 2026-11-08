@@ -12,7 +12,11 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -46,6 +50,11 @@ public class AllatGUI extends JFrame {
     private AllatTablaModell tablaModell;
     private JTable allatTabla;
 
+    private JComboBox<String> tipusSzuro;
+    private JComboBox<Object> allapotSzuro;
+
+    private static final String MIND = "Mind";
+
     private final Map<EledelTipus, JLabel> keszletCimkek = new EnumMap<>(EledelTipus.class);
 
     public AllatGUI(MenhelyModell modell) {
@@ -59,6 +68,8 @@ public class AllatGUI extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
+        setJMenuBar(keszitMenusor());
+
         JTabbedPane tabok = new JTabbedPane();
 
         allatokPanel = keszitAllatokPanel();
@@ -69,11 +80,64 @@ public class AllatGUI extends JFrame {
 
         setContentPane(tabok);
 
-        // TODO: menusor (Fajl -> Mentes/Betoltes, Allat -> Uj)
-        // TODO: Allatok ful: szuro vezerlok (tipus / allapot JComboBox)
-        // TODO: Allatok ful: etetes gomb es esemenykezelok
+        frissitTabla();
     }
 
+
+    private JMenuBar keszitMenusor() {
+        JMenuBar menusor = new JMenuBar();
+        JMenu fajlMenu = new JMenu("Fájl");
+
+        JMenuItem mentesItem = new JMenuItem("Mentés");
+        mentesItem.addActionListener(e -> mentes());
+        fajlMenu.add(mentesItem);
+
+        JMenuItem betoltesItem = new JMenuItem("Betöltés");
+        betoltesItem.addActionListener(e -> betoltes());
+        fajlMenu.add(betoltesItem);
+
+        menusor.add(fajlMenu);
+        return menusor;
+    }
+
+    private void mentes() {
+        JFileChooser valaszto = new JFileChooser();
+        valaszto.setSelectedFile(new java.io.File("allatok.dat"));
+        if (valaszto.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        String utvonal = valaszto.getSelectedFile().getAbsolutePath();
+        try {
+            modell.mentes(utvonal);
+            JOptionPane.showMessageDialog(this,
+                    "Mentés sikeres: " + utvonal,
+                    "Mentés", JOptionPane.INFORMATION_MESSAGE);
+        } catch (java.io.IOException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Hiba a mentés során: " + ex.getMessage(),
+                    "Mentés hiba", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void betoltes() {
+        JFileChooser valaszto = new JFileChooser();
+        if (valaszto.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        String utvonal = valaszto.getSelectedFile().getAbsolutePath();
+        try {
+            modell.betoltes(utvonal);
+            frissitTabla();
+            frissitRaktarKijelzo();
+            JOptionPane.showMessageDialog(this,
+                    "Betöltés sikeres: " + utvonal,
+                    "Betöltés", JOptionPane.INFORMATION_MESSAGE);
+        } catch (java.io.IOException | ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Hiba a betöltés során: " + ex.getMessage(),
+                    "Betöltés hiba", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     private JPanel keszitAllatokPanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -91,6 +155,20 @@ public class AllatGUI extends JFrame {
         torolGomb.addActionListener(e -> kivalasztottTorlese());
         eszkoztar.add(torolGomb);
 
+        eszkoztar.add(new JLabel("  Típus:"));
+        tipusSzuro = new JComboBox<>(new String[]{MIND, "Emlős", "Madár", "Hüllő"});
+        tipusSzuro.addActionListener(e -> frissitTabla());
+        eszkoztar.add(tipusSzuro);
+
+        eszkoztar.add(new JLabel("  Állapot:"));
+        allapotSzuro = new JComboBox<>();
+        allapotSzuro.addItem(MIND);
+        for (Allapot a : Allapot.values()) {
+            allapotSzuro.addItem(a);
+        }
+        allapotSzuro.addActionListener(e -> frissitTabla());
+        eszkoztar.add(allapotSzuro);
+
         panel.add(eszkoztar, BorderLayout.NORTH);
 
         tablaModell = new AllatTablaModell(modell.getAllatok());
@@ -99,6 +177,40 @@ public class AllatGUI extends JFrame {
 
         panel.add(new JScrollPane(allatTabla), BorderLayout.CENTER);
         return panel;
+    }
+
+    private void frissitTabla() {
+        if (tablaModell == null) {
+            return;
+        }
+        String tipus = (String) tipusSzuro.getSelectedItem();
+        Object allapot = allapotSzuro.getSelectedItem();
+
+        java.util.function.Predicate<Allat> feltetel = allat -> {
+            if (!MIND.equals(tipus)
+                    && !tipusNev(allat).equals(tipus)) {
+                return false;
+            }
+            if (!(MIND.equals(allapot)) && allat.getAllapot() != allapot) {
+                return false;
+            }
+            return true;
+        };
+
+        tablaModell.setAllatok(modell.szur(feltetel));
+    }
+
+    private String tipusNev(Allat allat) {
+        if (allat instanceof Emlos) {
+            return "Emlős";
+        }
+        if (allat instanceof Madar) {
+            return "Madár";
+        }
+        if (allat instanceof Hullo) {
+            return "Hüllő";
+        }
+        return allat.getClass().getSimpleName();
     }
 
     private void ujAllatDialogus() {
@@ -169,7 +281,7 @@ public class AllatGUI extends JFrame {
             }
 
             modell.hozzaad(allat);
-            tablaModell.fireTableDataChanged();
+            frissitTabla();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this,
                     "A kor egész szám, a súly és a szárnyfesztáv szám legyen.",
@@ -190,7 +302,7 @@ public class AllatGUI extends JFrame {
         }
 
         int modellSor = allatTabla.convertRowIndexToModel(nezetiSor);
-        Allat allat = modell.getAllatok().get(modellSor);
+        Allat allat = tablaModell.getAllat(modellSor);
 
         if (allat.getAllapot() == Allapot.MEGHALT) {
             JOptionPane.showMessageDialog(this,
@@ -201,7 +313,7 @@ public class AllatGUI extends JFrame {
 
         boolean sikeres = allat.etetes(modell.getRaktar());
         if (sikeres) {
-            tablaModell.fireTableDataChanged();
+            frissitTabla();
             frissitRaktarKijelzo();
         } else {
             JOptionPane.showMessageDialog(this,
@@ -220,7 +332,7 @@ public class AllatGUI extends JFrame {
         }
 
         int modellSor = allatTabla.convertRowIndexToModel(nezetiSor);
-        Allat allat = modell.getAllatok().get(modellSor);
+        Allat allat = tablaModell.getAllat(modellSor);
 
         int valasz = JOptionPane.showConfirmDialog(this,
                 "Biztosan törlöd? " + allat.getNev(),
@@ -231,7 +343,7 @@ public class AllatGUI extends JFrame {
         }
 
         modell.torol(allat);
-        tablaModell.fireTableDataChanged();
+        frissitTabla();
     }
 
     private JPanel mezoSor(String cimke, java.awt.Component mezo) {
@@ -312,10 +424,19 @@ public class AllatGUI extends JFrame {
         private static final DateTimeFormatter IDO_FORMAZO =
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-        private final transient List<Allat> allatok;
+        private transient List<Allat> allatok;
 
         AllatTablaModell(List<Allat> allatok) {
-            this.allatok = allatok;
+            this.allatok = new java.util.ArrayList<>(allatok);
+        }
+
+        void setAllatok(List<Allat> allatok) {
+            this.allatok = new java.util.ArrayList<>(allatok);
+            fireTableDataChanged();
+        }
+
+        Allat getAllat(int rowIndex) {
+            return allatok.get(rowIndex);
         }
 
         @Override
