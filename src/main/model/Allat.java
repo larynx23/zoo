@@ -51,6 +51,8 @@ public abstract class Allat implements Serializable {
 
     public abstract EledelTipus getSzuksegesEledel();
 
+    public abstract String getReszletek();
+
     public final boolean etetes(Raktar raktar) {
         if (raktar == null || allapot == Allapot.MEGHALT) {
             return false;

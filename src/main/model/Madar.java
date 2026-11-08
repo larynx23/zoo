@@ -23,6 +23,11 @@ public class Madar extends Allat {
         return Math.max(1, (int) Math.ceil(szarnyfesztav / 0.5));
     }
 
+    @Override
+    public String getReszletek() {
+        return "Szárnyfesztáv: " + szarnyfesztav + " m";
+    }
+
     public double getSzarnyfesztav() {
         return szarnyfesztav;
     }

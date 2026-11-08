@@ -23,6 +23,11 @@ public class Hullo extends Allat {
         return mergezo ? 1 : 2;
     }
 
+    @Override
+    public String getReszletek() {
+        return "Mérgező: " + (mergezo ? "igen" : "nem");
+    }
+
     public boolean isMergezo() {
         return mergezo;
     }

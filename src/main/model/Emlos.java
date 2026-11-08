@@ -22,10 +22,15 @@ public class Emlos extends Allat {
     protected int getAdagMeret() {
         return Math.max(1, (int) Math.ceil(getSuly() / 10.0));
     }
-    
+
     @Override
     protected void etetesHatasa() {
         setSuly(getSuly() + 0.5);
+    }
+
+    @Override
+    public String getReszletek() {
+        return "Szőrtípus: " + szorTipus;
     }
 
     public String getSzorTipus() {

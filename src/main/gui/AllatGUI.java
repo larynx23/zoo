@@ -81,6 +81,11 @@ public class AllatGUI extends JFrame {
         JButton ujGomb = new JButton("Új állat");
         ujGomb.addActionListener(e -> ujAllatDialogus());
         eszkoztar.add(ujGomb);
+
+        JButton torolGomb = new JButton("Törlés");
+        torolGomb.addActionListener(e -> kivalasztottTorlese());
+        eszkoztar.add(torolGomb);
+
         panel.add(eszkoztar, BorderLayout.NORTH);
 
         tablaModell = new AllatTablaModell(modell.getAllatok());
@@ -170,6 +175,30 @@ public class AllatGUI extends JFrame {
         }
     }
 
+    private void kivalasztottTorlese() {
+        int nezetiSor = allatTabla.getSelectedRow();
+        if (nezetiSor < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Előbb válassz ki egy állatot a táblázatból.",
+                    "Nincs kijelölés", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        int modellSor = allatTabla.convertRowIndexToModel(nezetiSor);
+        Allat allat = modell.getAllatok().get(modellSor);
+
+        int valasz = JOptionPane.showConfirmDialog(this,
+                "Biztosan törlöd? " + allat.getNev(),
+                "Törlés megerősítése", JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (valasz != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        modell.torol(allat);
+        tablaModell.fireTableDataChanged();
+    }
+
     private JPanel mezoSor(String cimke, java.awt.Component mezo) {
         JPanel sor = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel label = new JLabel(cimke);
@@ -242,7 +271,7 @@ public class AllatGUI extends JFrame {
     private static class AllatTablaModell extends AbstractTableModel {
 
         private static final String[] OSZLOPOK = {
-                "Tipus", "Nev", "Kor", "Suly (kg)", "Allapot", "Utolso etetes"
+                "Tipus", "Nev", "Kor", "Suly (kg)", "Allapot", "Utolso etetes", "Extra"
         };
 
         private static final DateTimeFormatter IDO_FORMAZO =
@@ -287,6 +316,8 @@ public class AllatGUI extends JFrame {
                     return allat.getUtolsoEtetesIdopont() == null
                             ? ""
                             : allat.getUtolsoEtetesIdopont().format(IDO_FORMAZO);
+                case 6:
+                    return allat.getReszletek();
                 default:
                     return "";
             }
