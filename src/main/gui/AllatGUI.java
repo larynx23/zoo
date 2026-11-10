@@ -81,6 +81,15 @@ public class AllatGUI extends JFrame {
         setContentPane(tabok);
 
         frissitTabla();
+        inditAllapotIdozito();
+    }
+
+    private void inditAllapotIdozito() {
+        javax.swing.Timer idozito = new javax.swing.Timer(5000, e -> {
+            modell.frissitAllapotok();
+            frissitTabla();
+        });
+        idozito.start();
     }
 
 
